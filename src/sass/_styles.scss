@@ -18,25 +18,54 @@ button {
   width: 100%;
   display: flex;
   justify-content: center;
+  padding: 10px 0;
   background-color: #4861bc;
   box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
   z-index: 999;
 }
 
 .search-form {
-  padding: 20px 0;
+  display: flex;
+  height: 40px;
+
+  &:focus-within {
+    border: 1px solid rgb(39, 244, 241);
+    border-radius: 6px;
+  }
+
+  input {
+    padding: 10px 15px;
+    border: none;
+    outline: none;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    width: 300px;
+  }
+
+  button {
+    background: url('../images/magnifying-glass-solid.svg') center no-repeat,
+      rgb(238, 238, 238);
+    background-size: 40%;
+    border: none;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    width: 40px;
+    height: 100%;
+  }
 }
 
 .main {
-  max-width: 1600px;
   margin: 0 auto;
-  padding: 100px 20px;
+  padding: 100px 20px 20px;
 }
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 360px));
+  justify-content: center;
   gap: 20px;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
 .photo-card {
@@ -73,6 +102,10 @@ button {
     font-size: 12px;
     text-align: center;
   }
+}
+
+.end-search {
+  text-align: center;
 }
 
 .is-hidden {
