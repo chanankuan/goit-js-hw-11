@@ -75,6 +75,7 @@ function handleLoadMore(entries, observer) {
         console.log(result.hits.length);
         if (result.hits.length < 20) {
           refs.hasReachedEnd.classList.remove('is-hidden');
+          observer.unobserve(refs.target);
         }
       });
     }
