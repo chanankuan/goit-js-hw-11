@@ -1,6 +1,7 @@
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+
 import { getSearchQuery } from './js/api';
 import { renderPhotoCards } from './js/render';
 
@@ -8,45 +9,74 @@ const refs = {
   form: document.querySelector('.search-form'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
+  target: document.querySelector('.js-guard'),
+  hasReachedEnd: document.querySelector('.end-search'),
 };
 
+let options = {
+  roll: null,
+  rootMargin: '200px',
+  threshold: 1.0,
+};
+
+let observer = new IntersectionObserver(handleLoadMore, options);
 let lightbox;
 let page = 1;
 
 refs.form.addEventListener('submit', handleSearch);
-refs.loadMoreBtn.addEventListener('click', handleLoadMore);
 
 function handleSearch(event) {
   event.preventDefault();
-  const { searchQuery } = event.currentTarget.elements;
+  const { query } = event.currentTarget.elements;
   page = 1;
-  performSearch(searchQuery.value, page);
-}
 
-function handleLoadMore() {
-  page += 1;
-  const { query } = refs.loadMoreBtn.dataset;
-  performSearch(query, page);
-}
+  getSearchQuery(query.value, page).then(result => {
+    observer.observe(refs.target);
 
-async function performSearch(query, page) {
-  const result = await getSearchQuery(query, page);
+    if (result.totalHits === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
 
-  if (result.totalHits === 0) {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-    return;
-  }
-
-  if (page === 1) {
     Notify.success(`Hooray! We found ${result.totalHits} images.`);
-    refs.loadMoreBtn.classList.remove('is-hidden');
-    refs.loadMoreBtn.dataset.query = query;
+    refs.target.dataset.query = query.value;
     refs.gallery.innerHTML = renderPhotoCards(result.hits);
-    lightbox = new SimpleLightbox('.gallery a');
-  } else {
-    refs.gallery.insertAdjacentHTML('beforeend', renderPhotoCards(result.hits));
-    lightbox.refresh();
-  }
+
+    if (lightbox) {
+      lightbox.refresh();
+    } else {
+      lightbox = new SimpleLightbox('.gallery a');
+    }
+
+    if (
+      document.body.scrollTop > 200 ||
+      document.documentElement.scrollTop > 200
+    ) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+}
+
+function handleLoadMore(entries, observer) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      page += 1;
+      const { query } = refs.target.dataset;
+
+      getSearchQuery(query, page).then(result => {
+        refs.gallery.insertAdjacentHTML(
+          'beforeend',
+          renderPhotoCards(result.hits)
+        );
+        lightbox.refresh();
+
+        console.log(result.hits.length);
+        if (result.hits.length < 20) {
+          refs.hasReachedEnd.classList.remove('is-hidden');
+        }
+      });
+    }
+  });
 }
