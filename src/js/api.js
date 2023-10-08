@@ -4,7 +4,7 @@ import { API_KEY } from './refs';
 
 axios.defaults.baseURL = 'https://pixabay.com/';
 
-export async function getSearchQuery(query, page = 1) {
+export async function getSearchQuery(query, page) {
   const params = new URLSearchParams({
     key: API_KEY,
     q: query,
