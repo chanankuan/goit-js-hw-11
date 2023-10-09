@@ -32,8 +32,6 @@ function handleSearch(event) {
 
   getSearchQuery(query.value, page)
     .then(result => {
-      observer.observe(refs.target);
-
       if (result.totalHits === 0) {
         Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
@@ -44,6 +42,7 @@ function handleSearch(event) {
       Notify.success(`Hooray! We found ${result.totalHits} images.`);
       refs.target.dataset.query = query.value;
       refs.gallery.innerHTML = renderPhotoCards(result.hits);
+      observer.observe(refs.target);
 
       if (lightbox) {
         lightbox.refresh();
@@ -72,18 +71,22 @@ function handleLoadMore(entries, observer) {
 
       getSearchQuery(query, page)
         .then(result => {
+          if (
+            result.totalHits - refs.gallery.children.length < 40 &&
+            result.totalHits > 0
+          ) {
+            refs.hasReachedEnd.classList.remove('is-hidden');
+            observer.unobserve(refs.target);
+          }
           refs.gallery.insertAdjacentHTML(
             'beforeend',
             renderPhotoCards(result.hits)
           );
           lightbox.refresh();
-
-          if (result.hits.length < 40) {
-            refs.hasReachedEnd.classList.remove('is-hidden');
-            observer.unobserve(refs.target);
-          }
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          console.log(error);
+        });
     }
   });
 }
