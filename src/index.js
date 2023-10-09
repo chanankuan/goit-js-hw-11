@@ -30,6 +30,7 @@ function handleSearch(event) {
   const { query } = event.currentTarget.elements;
   page = 1;
 
+  refs.hasReachedEnd.classList.add('is-hidden');
   getSearchQuery(query.value, page)
     .then(result => {
       if (result.totalHits === 0) {
@@ -71,10 +72,7 @@ function handleLoadMore(entries, observer) {
 
       getSearchQuery(query, page)
         .then(result => {
-          if (
-            result.totalHits - refs.gallery.children.length < 40 &&
-            result.totalHits > 0
-          ) {
+          if (result.totalHits - refs.gallery.children.length < 40) {
             refs.hasReachedEnd.classList.remove('is-hidden');
             observer.unobserve(refs.target);
           }
