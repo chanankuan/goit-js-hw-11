@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { API_KEY } from './refs';
 
 axios.defaults.baseURL = 'https://pixabay.com/';
@@ -12,13 +11,9 @@ export async function getSearchQuery(query, page) {
     orientation: 'horizontal',
     safesearch: true,
     page: page,
+    per_page: 40,
   });
 
-  try {
-    const response = await axios.get('/api/', { params });
-    return response.data;
-  } catch (error) {
-    console.log(error);
-    Notify.failure('Sorry, something went wrong. Please try again.');
-  }
+  const response = await axios.get('/api/', { params });
+  return response.data;
 }

@@ -30,33 +30,38 @@ function handleSearch(event) {
   const { query } = event.currentTarget.elements;
   page = 1;
 
-  getSearchQuery(query.value, page).then(result => {
-    observer.observe(refs.target);
+  getSearchQuery(query.value, page)
+    .then(result => {
+      observer.observe(refs.target);
 
-    if (result.totalHits === 0) {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-      return;
-    }
+      if (result.totalHits === 0) {
+        Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        return;
+      }
 
-    Notify.success(`Hooray! We found ${result.totalHits} images.`);
-    refs.target.dataset.query = query.value;
-    refs.gallery.innerHTML = renderPhotoCards(result.hits);
+      Notify.success(`Hooray! We found ${result.totalHits} images.`);
+      refs.target.dataset.query = query.value;
+      refs.gallery.innerHTML = renderPhotoCards(result.hits);
 
-    if (lightbox) {
-      lightbox.refresh();
-    } else {
-      lightbox = new SimpleLightbox('.gallery a');
-    }
+      if (lightbox) {
+        lightbox.refresh();
+      } else {
+        lightbox = new SimpleLightbox('.gallery a');
+      }
 
-    if (
-      document.body.scrollTop > 200 ||
-      document.documentElement.scrollTop > 200
-    ) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  });
+      if (
+        document.body.scrollTop > 200 ||
+        document.documentElement.scrollTop > 200
+      ) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      Notify.failure('Sorry, something went wrong. Please try again.');
+    });
 }
 
 function handleLoadMore(entries, observer) {
@@ -65,18 +70,20 @@ function handleLoadMore(entries, observer) {
       page += 1;
       const { query } = refs.target.dataset;
 
-      getSearchQuery(query, page).then(result => {
-        refs.gallery.insertAdjacentHTML(
-          'beforeend',
-          renderPhotoCards(result.hits)
-        );
-        lightbox.refresh();
+      getSearchQuery(query, page)
+        .then(result => {
+          refs.gallery.insertAdjacentHTML(
+            'beforeend',
+            renderPhotoCards(result.hits)
+          );
+          lightbox.refresh();
 
-        if (result.hits.length < 20) {
-          refs.hasReachedEnd.classList.remove('is-hidden');
-          observer.unobserve(refs.target);
-        }
-      });
+          if (result.hits.length < 40) {
+            refs.hasReachedEnd.classList.remove('is-hidden');
+            observer.unobserve(refs.target);
+          }
+        })
+        .catch(error => console.log(error));
     }
   });
 }
